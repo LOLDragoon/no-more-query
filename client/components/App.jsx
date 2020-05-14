@@ -50,8 +50,8 @@ export default class App extends Container {
     // send data through websocket
     socket.sync = (state) => {
       // state is an object that is connected to App's state
-      console.log('Outgoing state', state);
-      console.log('trying to stingify', JSON.stringify(state))
+      // console.log('Outgoing state', state);
+      // console.log('trying to stingify', JSON.stringify(state))
       return socket.send(JSON.stringify(state)); 
     }
 
@@ -291,7 +291,7 @@ export default class App extends Container {
   instanceButtons = () => {
     /* creates the select drop down of options that represent loadable instances in the client */
     const options = this.state.instances.map((instance) => {
-      console.log(instance.instanceName);
+      // console.log(instance.instanceName);
       return <option>{instance.instanceName}</option>
     });
     return <select onChange={this.loadStateFromInstance}>

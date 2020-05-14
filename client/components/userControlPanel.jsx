@@ -23,7 +23,6 @@ class userControlPanel extends Component {
       username: event.target.form[0].value,
       password: event.target.form[1].value
     }
-    console.log(logInfo)
     // we will post req from here
     fetch('/authenticate/login', {
       method: 'post',
@@ -62,7 +61,7 @@ class userControlPanel extends Component {
       username: event.target.form[0].value,
       password: event.target.form[1].value
     }
-    console.log(logInfo)
+    // console.log(logInfo)
     fetch('/authenticate/signup', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
