@@ -14,7 +14,7 @@ router.post('/login',
   userController.verifyUser,
   sessionController.createJWT,
   sessionController.setCookie,
-  (req, res) => res.status(200).json(true));
+  (req, res) => res.status(200).json(res.locals.result));
 
 router.get('/verify',
   sessionController.authenticateToken,

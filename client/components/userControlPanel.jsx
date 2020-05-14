@@ -11,7 +11,7 @@ class userControlPanel extends Component {
       isLoggedIn: false,
       isSigningUp: false,
       username: '',
-      //might need id
+      userID: 0,
     }
     this.logIn = this.logIn.bind(this)
     this.signUp = this.signUp.bind(this)
@@ -23,7 +23,6 @@ class userControlPanel extends Component {
       username: event.target.form[0].value,
       password: event.target.form[1].value
     }
-    console.log(logInfo)
     // we will post req from here
     fetch('/authenticate/login', {
       method: 'post',
@@ -32,10 +31,12 @@ class userControlPanel extends Component {
     })
       .then((response) => response.json())
       .then((result) => {
-             console.log(result) // expecting the result to be a true or false based on log in.
-             if(result === true){
+             console.log(result) // expecting an object with a result: boolean and an userID:
+             if(result.result === true){
               this.setState({isLoggedIn: true})
-              this.setState({username:logInfo.username})
+              this.setState({username:logInfo.username,
+                             userID: result.userID})
+              this.props.loadUserInstances(result.userID)
               console.log(this.state)
               //need to call server to load user-specific data
              }
@@ -49,27 +50,37 @@ class userControlPanel extends Component {
    
   }
 
+  // only used to conditionally render the signup div in the user controller
   signUp = () =>{
     this.setState({isSigningUp:true})
   }
 
+  // this is done upon trying to register a username and password
   register = (event) => {
     const logInfo = {
       username: event.target.form[0].value,
       password: event.target.form[1].value
     }
-    console.log(logInfo)
+    // console.log(logInfo)
     fetch('/authenticate/signup', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(logInfo),
     })
-      .catch((err) => console.log(err));
+    .then(response =>response.json())
+    .then(json=>{
+      console.log("OUR NEW USER!", json)
     this.setState({isLoggedIn: true,
-                    isSigningUp: false})
-
+                  isSigningUp: false,
+                  username: json.username,
+                  userID: json.userID})
+                  this.props.loadUserInstances(json.userID)
+    })
+    .catch((err) => console.log(err));
   }
 
+
+  //sign out, clears cookie and sets us back to the default window
   signOut = () => {
     this.setState({isLoggedIn:false})
     fetch('/authenticate/logout')
@@ -78,15 +89,17 @@ class userControlPanel extends Component {
     });
   }
   
-
+  // our jwt checking logic to remember an already logged in person.
   componentDidMount(){
     fetch('/authenticate/verify')
     .then(response => response.json())
     .then(json=> {
       if (json.result === true){
         this.setState({isLoggedIn: true,
-                        username: json.username}
+                        username: json.username,
+                        userID:json.userID}
                       )
+        this.props.loadUserInstances(json.userID)
       }
     })
     .catch((err) => { 
@@ -97,34 +110,10 @@ class userControlPanel extends Component {
   }
 
   render(){
-    // ideally we have some state to determine if the user is logged in or not and we will render one of the three options
-
-      
-
-      const signUp = (<div className = "signUp">
-           <form>
-            <label htmlFor= "newUsername">Username: </label>
-            <input type ="text" id ="newUsername" name= "newUsername" placeholder="username"/>
-            <label htmlFor= "newPassword">Password: </label>
-            <input type ="password" placeholder = "password" id ="newPassword" name= "newPassword"/>
-            <button type ="button">Sign up</button>
-          </form>
-        </div>)
-
-      // we would put the save-load buttons in here or maybe just the username  along with the log out option
-      const loggedIn =  (<div className = "loggedIn">
-          Welcome Username
-          <br></br>
-          
-          <br></br>
-          <button type="button" >Log Out</button>
-        </div>)
-
-
-
 
     return(
       <div className = "toolbar userPanel">
+      {/* anonymous callback function to allow inline conditional rendering. This could be handled outside the return. */}
       { (() => { 
         if(!this.state.isLoggedIn && this.state.isSigningUp){
       return(
@@ -160,11 +149,11 @@ class userControlPanel extends Component {
       else if(this.state.isLoggedIn){
         return(
         <div className = "loggedIn">
-          Welcome Username
+          Welcome {this.state.username}
           <br></br>
           <div className = "save">
           <input ref={this.props.refInputInstance} className="instance-name" type="text" placeholder="instance name"/>
-          <button onClick={() => this.props.saveInstance()}>Save</button>
+          <button onClick={() => this.props.saveInstance(this.state.userID)}>Save</button>
           </div>
           <br></br>
           <div className ="load"> 
@@ -175,16 +164,6 @@ class userControlPanel extends Component {
           <button type="button" onClick = {this.signOut} >Log Out</button>
         </div>
         
-        )}
-        else if(this.state.isLoggedIn){
-          return(
-          <div className = "loggedIn">
-            Welcome Username
-            <br></br>
-            <br></br>
-            <button type="button" onClick = {this.signOut} >Log Out</button>
-          </div>
-          
         )}
       })()
     }
