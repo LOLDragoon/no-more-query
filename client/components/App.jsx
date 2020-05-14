@@ -67,6 +67,7 @@ export default class App extends Container {
     this.loadStateFromInstance = this.loadStateFromInstance.bind(this)
     this.instanceButtons = this.instanceButtons.bind(this)
     this.loadUserInstances = this.loadUserInstances.bind(this)
+    // this.setMaster = this.setMaster(this)
     this.state = {
       tables: {},
       instances: []
@@ -74,6 +75,9 @@ export default class App extends Container {
   }
 
   // handles some undo/redo logic... more investigation needed
+
+  
+
   setState(...args) {
     let state, callback;
     let historic = false;

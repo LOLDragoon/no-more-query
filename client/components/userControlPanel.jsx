@@ -67,11 +67,29 @@ class userControlPanel extends Component {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(logInfo),
     })
-      .catch((err) => console.log(err));
+    .then(response =>response.json())
+    .then(json=>{
+      console.log(json)
     this.setState({isLoggedIn: true,
-                    isSigningUp: false})
+                  isSigningUp: false,
+                  username: json.username,
+                  userID: json.userID})
+    })
+    .catch((err) => console.log(err));
+    // this.setState({isLoggedIn: true,
+    //                 isSigningUp: false})
 
   }
+
+  // .then(response => response.json())
+  // .then(json =>{
+  //   console.log(json)
+  //   this.setState({isLoggedIn: true,
+  //                 isSigningUp: false,
+  //                 username: json.username,
+  //                 userID: json.userID})
+
+
 
   signOut = () => {
     this.setState({isLoggedIn:false})
@@ -88,8 +106,10 @@ class userControlPanel extends Component {
     .then(json=> {
       if (json.result === true){
         this.setState({isLoggedIn: true,
-                        username: json.username}
+                        username: json.username,
+                        userID:json.userID}
                       )
+        this.props.loadUserInstances(json.userID)
       }
     })
     .catch((err) => { 

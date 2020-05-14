@@ -10,7 +10,6 @@ userController.hashPassword = (req, res, next) => {
       bcrypt.hash(req.body.password, salt)
         .then((hashedPassword) => {
           res.locals.user = { username: req.body.username, password: hashedPassword };
-          console.log(res.locals.user);
           return next();
         });
     })
@@ -30,6 +29,8 @@ userController.createUser = (req, res, next) => {
   db.query(query, values)
     .then((response) => {
       console.log('User added to database: ', response.rows[0]);
+      delete res.locals.user.password;
+      res.locals.user.userID = response.id 
       return next();
     })
     .catch((err) => {
@@ -65,3 +66,4 @@ userController.verifyUser = (req, res, next) => {
 
 
 module.exports = userController;
+            
