@@ -23,7 +23,7 @@ userController.hashPassword = (req, res, next) => {
 userController.createUser = (req, res, next) => {
   // insert username and password to db
   const { user } = res.locals;
-  const query = `INSERT INTO users (username, password)
+  const query = `INSERT INTO userList (username, password)
                VALUES ($1, $2)
                RETURNING *`;
   const values = [user.username, user.password];
@@ -41,17 +41,18 @@ userController.createUser = (req, res, next) => {
 userController.verifyUser = (req, res, next) => {
   const { username, password } = req.body;
 
-  const query = `SELECT password FROM users
+  const query = `SELECT password, id FROM userList
                 WHERE username = $1`;
   const values = [username];
 
   db.query(query, values)
     .then((response) => {
       const hash = response.rows[0].password;
+      const userID = response.rows[0].id;
       bcrypt.compare(password, hash)
       //verified is boolean: true if username/pass combo are valid
         .then((verified) => {
-          // res.locals.result = verified;
+          res.locals.result = { result: verified, userID: userID };
           if (verified) return next();
           return next({ message: "Password or Username does not match" });
         })

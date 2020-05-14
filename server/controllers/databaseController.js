@@ -16,10 +16,14 @@ const databaseController = {};
 
 databaseController.saveToDatabase = (req, res, next) => {
 console.log("Our body is here",req.body)
-const query = `INSERT INTO savedStates (name, savedstate)
-               VALUES ($1, $2)
+// user_id name savedState
+const query = `INSERT INTO savedInstances (user_id, name, savedState)
+               VALUES ($1, $2, $3)
                RETURNING *`
-const values = [req.body.instanceName,{currentState: req.body.currentState, pastState: req.body.pastState, futureState: req.body.futureState}]
+const values = [req.body.userID,
+                req.body.savedState.instanceName,
+                {currentState: req.body.savedState.currentState, pastState: req.body.savedState.pastState, futureState: req.body.savedState.futureState}
+              ]
 db.query(query,values)
 .then(response =>{
   console.log("Our database entry now looks like this", response.rows[0])
@@ -38,9 +42,10 @@ db.query(query,values)
 
 //this should be called whenever the main page is served so the user has all their files at the ready.
 databaseController.loadFromDatabase = (req, res, next) =>{
-
-  const query = `SELECT * FROM savedStates`
-  db.query(query)
+  console.log(req.query)
+  const query = `SELECT * FROM savedInstances WHERE user_id = $1`
+  const values = [req.query.id];
+  db.query(query, values)
   .then(response => {
     console.log(("the files available are, ", response.rows))
     res.locals.retrievedFiles = response.rows

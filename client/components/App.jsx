@@ -1,4 +1,4 @@
-import React from 'react';
+                     import React from 'react';
 import Container from './Container.jsx';
 
 import { downloadAsFile, onPause, createSQL } from './util.js';
@@ -66,6 +66,7 @@ export default class App extends Container {
     this.saveInstance = this.saveInstance.bind(this)
     this.loadStateFromInstance = this.loadStateFromInstance.bind(this)
     this.instanceButtons = this.instanceButtons.bind(this)
+    this.loadUserInstances = this.loadUserInstances.bind(this)
     this.state = {
       tables: {},
       instances: []
@@ -133,10 +134,10 @@ export default class App extends Container {
     }
   }
 
-  // opens webcoket connection on initial render
+  // opens websocket connection on initial render
   componentDidMount() {
     this.session = App.Session(this);
-    this.loadAllInstances();
+    // this.loadAllInstances();
   }
 
   // functionality to be passed to child components
@@ -255,7 +256,7 @@ export default class App extends Container {
     this.setState({tables: instance.currentState.tables});
   }
 
-  saveInstance = () => {
+  saveInstance = (userID) => {
     const savedObj = {
       instanceName: this.refInputInstance.current.value,
       currentState: {tables: this.state.tables}, /* TODO: change currentState to currentTables let alex know */
@@ -266,7 +267,7 @@ export default class App extends Container {
     fetch('/saved', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(savedObj)
+      body: JSON.stringify({userID: userID, savedState: savedObj})
     }).then((res) => {
       return res.json();
     }).then( () => {
@@ -288,6 +289,23 @@ export default class App extends Container {
     </select>
   }
 
+
+  loadUserInstances = (userID) => {
+    fetch(`/saved?id=${userID}`, {
+      method: 'GET',
+      headers: {'Content-Type': 'application/json'},
+    }).then((res) => {
+      return res.json();
+    }).then( (objects) => {
+      const instances = objects.map((obj) => {
+        const { savedstate } = obj;
+        const { currentState, pastState, futureState } = savedstate;
+        return { instanceName: obj.name, currentState, pastState, futureState };
+      })
+      this.setState({instances});
+    }).catch( () => alert('error loading instances from server'))
+  }
+
   render() {
     return (
       <div className='App'>
@@ -297,13 +315,14 @@ export default class App extends Container {
           <button onClick={() => this.toSql()}>Export SQL</button>
           <button onClick={() => this.setState(-1)}>Undo</button>
           <button onClick={() => this.setState(1)}>Redo</button>
-          <input ref={this.refInputInstance} className="instance-name" type="text" placeholder="instance name"/>
+          {/* <input ref={this.refInputInstance} className="instance-name" type="text" placeholder="instance name"/>
           <button onClick={() => this.saveInstance()}>Save</button>
           Saved Instances
-          {this.instanceButtons()}
+          {this.instanceButtons()} */}
         </div>
         <UserControlPanel  loadAllInstances = {this.loadAllInstances} saveInstance = {this.saveInstance} loadStateFromInstance = {this.loadStateFromInstance}
-                          instanceButtons = {this.instanceButtons} refInputInstance = {this.refInputInstance} instances = {this.state.instances}/>
+                          instanceButtons = {this.instanceButtons} refInputInstance = {this.refInputInstance} instances = {this.state.instances}
+                          loadUserInstances = {this.loadUserInstances}/>
         <div className='tables'>          
           {this.mapTables((table, id) =>
             <div key={"wrapper"+id} ref={"wrapper"+id} style={{position: "absolute", left: table.position.x, top: table.position.y}}>

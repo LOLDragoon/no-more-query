@@ -11,6 +11,7 @@ class userControlPanel extends Component {
       isLoggedIn: false,
       isSigningUp: false,
       username: '',
+      userID: 0,
       //might need id
     }
     this.logIn = this.logIn.bind(this)
@@ -32,10 +33,12 @@ class userControlPanel extends Component {
     })
       .then((response) => response.json())
       .then((result) => {
-             console.log(result) // expecting the result to be a true or false based on log in.
-             if(result === true){
+             console.log(result) // expecting an object with a result: boolean and an userID:
+             if(result.result === true){
               this.setState({isLoggedIn: true})
-              this.setState({username:logInfo.username})
+              this.setState({username:logInfo.username,
+                             userID: result.userID})
+              this.props.loadUserInstances(result.userID)
               console.log(this.state)
               //need to call server to load user-specific data
              }
@@ -164,7 +167,7 @@ class userControlPanel extends Component {
           <br></br>
           <div className = "save">
           <input ref={this.props.refInputInstance} className="instance-name" type="text" placeholder="instance name"/>
-          <button onClick={() => this.props.saveInstance()}>Save</button>
+          <button onClick={() => this.props.saveInstance(this.state.userID)}>Save</button>
           </div>
           <br></br>
           <div className ="load"> 
