@@ -30,7 +30,7 @@ userController.createUser = (req, res, next) => {
     .then((response) => {
       console.log('User added to database: ', response.rows[0]);
       delete res.locals.user.password;
-      res.locals.user.userID = response.id 
+      res.locals.user.userID = response.rows[0].id 
       return next();
     })
     .catch((err) => {

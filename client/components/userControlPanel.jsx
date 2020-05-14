@@ -69,11 +69,12 @@ class userControlPanel extends Component {
     })
     .then(response =>response.json())
     .then(json=>{
-      console.log(json)
+      console.log("OUR NEW USER!", json)
     this.setState({isLoggedIn: true,
                   isSigningUp: false,
                   username: json.username,
                   userID: json.userID})
+                  this.props.loadUserInstances(json.userID)
     })
     .catch((err) => console.log(err));
     // this.setState({isLoggedIn: true,
